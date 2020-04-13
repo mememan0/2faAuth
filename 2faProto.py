@@ -56,7 +56,7 @@ def checkFile(id):
 		return True
 	    else:
 		continue
-def getMac(id):
+def getStoredValue(id, itemNo):
     with open('data.csv') as f:
         reader = csv.reader(f)
         data = list(reader)
@@ -69,13 +69,14 @@ def getMac(id):
         for approvedId in storedId:
             if approvedId == id:
                 listNumber = data.index(id)
-		result = str(data[listNumber + 1])
-                return result
+		result = str(data[listNumber + itemNo])
+                return str(result)
             else:
                 continue
 
 def connectBluetooth(id):
-    print(getMac(id))
+    msg(2, "User: " + getStoredValue(id, 2))
+    msg(2, "Users Bluetooth MAC: " + getStoredValue(id, 1))
 
 
 
