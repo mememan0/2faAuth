@@ -2,8 +2,7 @@
 
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
-import csv, time, subprocess
-
+import csv, subprocess, time
 greenLed = 17 # Setup LED's
 redLed = 27
 
@@ -11,6 +10,8 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(greenLed, GPIO.OUT)
 GPIO.setup(redLed, GPIO.OUT)
 
+global tic
+global tok
 
 def banner(): # Opening Banner
 
@@ -31,10 +32,12 @@ def msg(type, text): # Debug Message formatting
        print("[i] " + text)
 
 def readCard(): # Reads UUID from card
+    global tic
     msg(2,"Place Card On Reader...")
     try:
         reader = SimpleMFRC522()
         id, data = reader.read()
+	tic = time.time()
 	GPIO.output(redLed, GPIO.HIGH)
 	time.sleep(0.2)
         msg(2,"Card ID:" + str(id))
@@ -61,6 +64,7 @@ def checkFile(id): # Function to check if a UUID is valid
     	for i in range (0, int(len(data)/3)):
             storedId.append(data[counter])
             counter = counter + 3
+	
         for approvedId in storedId:
 	    if approvedId == id:
                 msg(2, "Card Approved")
@@ -98,7 +102,7 @@ def connectBluetooth(id): # Function used to ping the bluetooth device
 
 
     if "44 bytes" in output: # Is there a reply of 44 bytes?
-	msg(2, "Device Authenticated")
+	msg(2, "Device Detected")
         msg(2, output[66:-29])
 	return True
     else:
@@ -114,6 +118,9 @@ def main(): # Main function
 	if connectBluetooth(id) == True: # Is the phone in range?
 	    msg(2, "Authentication OK")
 	    GPIO.output(greenLed, GPIO.HIGH)
+            tok = time.time()
+	    timer = tok - tic
+	    msg(2, "Time Taken: " + str(timer) + " Seconds")
 	    time.sleep(3)
 	    GPIO.output(greenLed, GPIO.LOW)
 	else:
@@ -123,6 +130,6 @@ def main(): # Main function
 
     else:
         msg(1, "Invalid Card/ID")
-    
+
 main()
 quit()
